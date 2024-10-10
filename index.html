@@ -18,13 +18,13 @@
         }
     </script>
 </head>
-<body class="h-full flex p-8 font-sans">
-    <div class="w-full bg-white rounded-2xl shadow-lg p-8">
-        <h1 class="text-3xl font-semibold text-gray-800 mb-6">Dice Roll Distribution Visualizer</h1>
-        <div id="controls" class="mb-8 flex flex-wrap gap-4">
+<body class="h-full flex flex-col p-4 sm:p-8 font-sans">
+    <div class="w-full bg-white rounded-2xl shadow-lg p-4 sm:p-8">
+        <h1 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-4 sm:mb-6">Dice Roll Distribution Visualizer</h1>
+        <div id="controls" class="mb-4 sm:mb-8 flex flex-col sm:flex-row flex-wrap gap-4">
             <div class="flex flex-col">
                 <label for="numDice" class="text-sm font-medium text-gray-700 mb-1">Number of Dice (1-10)</label>
-                <select id="numDice" class="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-apple-blue">
+                <select id="numDice" class="w-full sm:w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-apple-blue">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -39,13 +39,13 @@
             </div>
             <div class="flex flex-col">
                 <label for="numRolls" class="text-sm font-medium text-gray-700 mb-1">Number of Rolls (1-10000)</label>
-                <input type="number" id="numRolls" min="1" max="10000" value="1000" class="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-apple-blue">
+                <input type="number" id="numRolls" min="1" max="10000" value="1000" class="w-full sm:w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-apple-blue">
             </div>
-            <button onclick="rollDice()" class="px-4 py-2 bg-apple-blue text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
+            <button onclick="rollDice()" class="w-full sm:w-auto px-4 py-2 bg-apple-blue text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
                 Roll Dice
             </button>
         </div>
-        <div id="chart" class="w-full h-96 bg-gray-50 rounded-lg"></div>
+        <div id="chart" class="w-full h-64 sm:h-96 bg-gray-50 rounded-lg"></div>
     </div>
 
     <script>
@@ -67,16 +67,18 @@
         rollDice()
 
         function visualizeResults(results, numRolls) {
-            const margin = {top: 50, right: 20, bottom: 30, left: 40};
-            const width = 800 - margin.left - margin.right;
-            const height = 400 - margin.top - margin.bottom+10;
+            const chartContainer = document.getElementById('chart');
+            const margin = {top: 40, right: 20, bottom: 50, left: 40};
+            const width = chartContainer.clientWidth - margin.left - margin.right;
+            const height = chartContainer.clientHeight - margin.top - margin.bottom;
 
             d3.select("#chart").selectAll("*").remove();
 
             const svg = d3.select("#chart")
                 .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
+                .attr("width", "100%")
+                .attr("height", "100%")
+                .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
                 .append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -92,7 +94,10 @@
 
             svg.append("g")
                 .attr("transform", `translate(0,${height})`)
-                .call(d3.axisBottom(x));
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("transform", "rotate(-45)")
+                .style("text-anchor", "end");
 
             svg.append("g")
                 .call(d3.axisLeft(y));
@@ -109,9 +114,10 @@
 
             // Add labels
             svg.append("text")
-                .attr("transform", `translate(${width/2},${height + margin.top + 10})`)
+                .attr("transform", `translate(${width/2},${height + margin.bottom - 5})`)
                 .style("text-anchor", "middle")
-                .text("Dice Roll Sum");
+                .text("Dice Roll Sum")
+                .style("font-size", "12px");
 
             svg.append("text")
                 .attr("transform", "rotate(-90)")
@@ -119,16 +125,20 @@
                 .attr("x", 0 - (height / 2))
                 .attr("dy", "1em")
                 .style("text-anchor", "middle")
-                .text("Frequency");
+                .text("Frequency")
+                .style("font-size", "12px");
 
             // Add title
             svg.append("text")
                 .attr("x", width / 2)
-                .attr("y", 10 - (margin.top / 2))
+                .attr("y", 0 - (margin.top / 2))
                 .attr("text-anchor", "middle")
-                .style("font-size", "16px")
+                .style("font-size", "14px")
                 .text(`Distribution of ${numRolls} Dice Rolls`);
         }
+
+        // Add resize event listener
+        window.addEventListener('resize', () => rollDice());
     </script>
 </body>
 </html>
